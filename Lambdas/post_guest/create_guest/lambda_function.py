@@ -7,9 +7,6 @@ import xml.etree.ElementTree as ET
 s3 = boto3.client('s3')
 ##get request
 ##save xml to s3 bucket
-##check if response body, if not, send to dlq
-
-
 def lambda_handler(event, context):
     xml_string = event['body-json']
     print('XML Type', type(xml_string))
@@ -25,7 +22,6 @@ def lambda_handler(event, context):
             'Error': 'Missing NewProfileRequest tag'
         }
         
-    
     guestInfo = {}
     guestInfo["uniqueId"] = int(xml.uniqueid.string.strip())
     guestInfo["fullName"] = xml.firstname.string.strip() + ' ' + xml.lastname.string.strip()
@@ -62,11 +58,9 @@ def lambda_handler(event, context):
     
     # Create a new message
     response = queue.send_message(MessageBody=json.dumps(guestInfo))
-    
-    # print(response)
-    # print(guestInfo)
+    print(response)
     return {
-        'statusCode': 200,
+        'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
         'body': json.dumps('Success'),
         'url': 'https://fqqhvx2e0d.execute-api.us-east-1.amazonaws.com/Dev/guests'
     }
